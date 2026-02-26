@@ -40,7 +40,6 @@ user_df=pd.read_csv(USER_FILE)
 
 mode=st.sidebar.radio("帳號",["登入","註冊"])
 
-
 if mode=="註冊":
 
     st.header("建立帳號")
@@ -96,7 +95,6 @@ if login.empty:
     st.warning("請登入")
     st.stop()
 
-
 login_name=str(login.iloc[0]["姓名"]).strip()
 
 team_default=login.iloc[0]["球隊"]
@@ -128,13 +126,11 @@ else:
 
     df=pd.DataFrame(columns=columns)
 
-
 for c in columns:
 
     if c not in df.columns:
 
         df[c]=0
-
 
 df["姓名"]=df["姓名"].astype(str).str.strip()
 
@@ -175,7 +171,6 @@ if IS_ADMIN:
     number_default=int(info["背號"])
 
 
-
     if not df.empty:
 
         st.subheader("📊 全部球員累積排行榜")
@@ -198,16 +193,23 @@ if IS_ADMIN:
 
         )
 
-        summary["打擊率"]=(summary["安打"]/summary["打數"]).round(3)
+        AB=summary["打數"]
+        H=summary["安打"]
+        BB=summary["BB"]
+        SF=summary["SF"]
+
+        summary["打擊率"]=(H/AB).round(3).fillna(0)
 
         summary["上壘率"]=(
-        (summary["安打"]+summary["BB"])/
-        (summary["打數"]+summary["BB"]+summary["SF"])
+        (H+BB)/(AB+BB+SF)
+        ).round(3).fillna(0)
+
+        summary["長打率"]=(TB/AB).round(3).fillna(0)
+
+        summary["OPS"]=(
+        summary["上壘率"]+
+        summary["長打率"]
         ).round(3)
-
-        summary["長打率"]=(TB/summary["打數"]).round(3)
-
-        summary["OPS"]=(summary["上壘率"]+summary["長打率"]).round(3)
 
         st.dataframe(
 
@@ -222,7 +224,7 @@ else:
 
 
 # ======================
-# 個人累積
+# 個人累積統計
 # ======================
 
 st.header("📊 個人累積統計")
@@ -267,7 +269,7 @@ if not player_df.empty:
 
 
 # ======================
-# 新增紀錄（修改版）
+# 新增紀錄
 # ======================
 
 st.header("新增比賽紀錄")
@@ -298,9 +300,9 @@ with c3:
     SH=st.number_input("SH",0)
     SB=st.number_input("SB",0)
 
+# ⭐ 安打自動加總（不顯示提示）
 H=single+double+triple+HR
 
-st.info(f"⭐ 自動安打：{H}")
 
 if st.button("新增紀錄"):
 
@@ -342,7 +344,7 @@ if st.button("新增紀錄"):
 
 
 # ======================
-# 單場紀錄（日期查詢）
+# 單場紀錄
 # ======================
 
 st.header("📅 單場比賽紀錄")
@@ -377,6 +379,7 @@ PA {int(row['打席'])} ｜ AB {int(row['打數'])} ｜ H {int(row['安打'])}
 BB {int(row['BB'])} ｜ SF {int(row['SF'])} ｜ SH {int(row['SH'])} ｜ SB {int(row['SB'])}
 
 ---
+
 """)
 
     with colB:
